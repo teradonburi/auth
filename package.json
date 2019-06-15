@@ -1,0 +1,28 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:teradonburi/auth.git",
+  "author": "teradonburi <daikiterai@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "lowdb": "^1.0.0",
+    "passport": "^0.4.0",
+    "passport-http-bearer": "^1.0.1",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "node-dev": "^4.0.0",
+    "parcel": "^1.12.3",
+    "parcel-bundler": "^1.12.3",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1"
+  },
+  "scripts": {
+    "dev": "NODE_ENV=dev node-dev --inspect server.js",
+    "prod": "rm -rf dist/* && parcel build index.html && rm -rf dist/*.map && node server.js"
+  }
+}

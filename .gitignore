@@ -1,0 +1,6 @@
+# ここに書いたファイルとかフォルダはgithubにアップロードされません
+node_modules
+.cache
+dist/*
+db.json
+yarn-error.log
