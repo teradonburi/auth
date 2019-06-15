@@ -31,11 +31,11 @@ app.use(express.static('dist'))
 // Json WebToken(JWT)生成(改ざん不能なトークン)
 // https://qiita.com/kaiinui/items/21ec7cc8a1130a1a103a
 const jwt = require('jsonwebtoken')
-const secretKey='secret' // 暗号化用キー（バレちゃいけないやつ）
+const jwtKey='secret' // 暗号化用キー（バレちゃいけないやつ）
 
 // ハッシュ生成用
 const crypto = require("crypto")
-const sha512 = crypto.createHash('sha512')
+
 
 // 認証処理の前処理だよ
 const passport = require('passport')
@@ -43,10 +43,12 @@ const BearerStrategy = require('passport-http-bearer')
 const authenticate = passport.authenticate('bearer', {session: false})
 passport.use(new BearerStrategy(function(token, done) {
   // 認証APIの場合はここを通るよ
-  jwt.verify(token, secretKey, function(err, decoded) {
+  jwt.verify(token, jwtKey, function(err, decoded) {
     if (err) return done(null, false) // 不正なトークン
 
-    const hash = sha512.update(decoded)
+    const sha512 = crypto.createHash('sha512')
+    sha512.update(decoded)
+    const hash = sha512.digest('hex')
 
     const user = db.get('users')
       .find({ password: hash })
@@ -74,7 +76,9 @@ async function create(req, res) {
 
   // passwordはデータベースに直接保存するのでなくハッシュ化する
   // 生のパスワードを保存しておくと、データベースをまるごと盗まれたらやばい
-  const hash = sha512.update(password)
+  const sha512 = crypto.createHash('sha512')
+  sha512.update(password)
+  const hash = sha512.digest('hex')
 
   // user作成
   const id = uuidv4()
@@ -83,8 +87,30 @@ async function create(req, res) {
     .write()
   
   // JWT作成（認証用）
-  const token = jwt.sign(password, 'secret')
+  const token = jwt.sign(password, jwtKey)
   res.json({id, token})
+}
+
+// ログイン
+async function login(req, res) {
+
+  const email = req.body.email
+  const password = req.body.password
+
+  const sha512 = crypto.createHash('sha512')
+  sha512.update(password)
+  const hash = sha512.digest('hex')
+
+  const user = db.get('users')
+    .find({ email, password: hash })
+    .value()
+
+  if (!user) {
+    return res.status(400).json({message: 'メールアドレスか、パスワードが間違っています'})
+  }
+
+  const token = jwt.sign(password, jwtKey)
+  res.json({id: user.id, token})
 }
 
 // ユーザの取得
@@ -103,6 +129,7 @@ app.use(
   express.Router()
     // ユーザの作成
     .post('/users', create) // POSTメソッド
+    .post('/login', login)
 )
 
 // 認証ありのAPI
