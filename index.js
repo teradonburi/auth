@@ -1,7 +1,7 @@
 // parcelが色々解釈してくれて、importとかreactが使えるようになるよ
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { BrowserRouter, Switch, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom'
 
 // ブラウザのlocalStorage領域からtoken情報を取得するよ
 // localStorageはどこからでも参照できるよ
@@ -13,49 +13,35 @@ class TopPage extends React.Component {
 
   constructor(props) {
     super(props)
-    this.state = {loading: true, user: null}
     // logoutメソッドの中でthisを使えるようにするよ
     this.logout = this.logout.bind(this)
   }
 
-  componentDidMount() {
-    const user = getUser()
-    if (user.id && user.token) {
-      fetch(`/api/users/${user.id}`, {
-        method: 'GET',
-        headers: {'Authorization': `Bearer ${user.token}`},
-      })
-      .then((response) => {
-        if (!response.ok) throw response
-        return response.json()
-      })
-      .then(user => this.setState({user}))
-      .finally(() => this.setState({loading: false}))
-    } else {
-      this.setState({loading: false})
-    }
-  }
-
   logout() {
     delete localStorage.user
-    this.setState({user: null})
+    // 再描画
+    this.setState({})
   }
 
   render() {
-    const { loading, user } = this.state
+    const user = getUser()
 
-    if (loading) return <div>ローディング中・・・</div>
+    const styles = {
+      link: {
+        display: 'block',
+      }
+    }
 
     return (
       <div>
-        {!user ? 
+        {Object.keys(user).length === 0 ? 
           <div>
-            <Link style={{display: 'block'}} to='/signup'>ユーザ登録</Link>
-            <Link style={{display: 'block'}} to='/login'>ログイン</Link>
+            <Link style={styles.link} to='/signup'>ユーザ登録</Link>
+            <Link style={styles.link} to='/login'>ログイン</Link>
           </div>
           : 
           <div>
-            <div>ようこそ{user.name}さん</div>
+            <Link style={styles.link} to='/user'>ユーザページへ</Link>
             <button onClick={this.logout}>ログアウト</button>
           </div>
         }
@@ -71,13 +57,6 @@ class SignupPage extends React.Component {
     this.state = { error : null }
     // createUserメソッドの中でthisを使えるようにするよ
     this.createUser = this.createUser.bind(this)
-
-    // ブラウザのlocalStorage領域からuser情報を取得するよ
-    const user = getUser()
-    if (Object.keys(user).length > 0) {
-      // もうログイン済みなのでトップページに遷移するよ
-      this.props.history.replace('/')
-    }
   }
 
   createUser(e) {
@@ -141,13 +120,6 @@ class LoginPage extends React.Component {
     this.state = { error : null }
     // loginメソッドの中でthisを使えるようにするよ
     this.login = this.login.bind(this)
-
-    // ブラウザのlocalStorage領域からuser情報を取得するよ
-    const user = getUser()
-    if (Object.keys(user).length > 0) {
-      // もうログイン済みなのでトップページに遷移するよ
-      this.props.history.replace('/')
-    }
   }
 
   login(e) {
@@ -204,6 +176,57 @@ class LoginPage extends React.Component {
 
 const NotFound = () => <div>Not Found</div>
 
+class UserPage extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.state = {loading: true, user: null}
+  }
+
+  componentDidMount() {
+    const user = getUser()
+    if (user.id && user.token) {
+      fetch(`/api/users/${user.id}`, {
+        method: 'GET',
+        headers: {'Authorization': `Bearer ${user.token}`},
+      })
+      .then((response) => {
+        if (!response.ok) throw response
+        return response.json()
+      })
+      .then(user => this.setState({user}))
+      .finally(() => this.setState({loading: false}))
+    } else {
+      this.setState({loading: false})
+    }
+  }
+
+  render() {
+    const { loading, user } = this.state
+
+    if (loading) return <div>ローディング中・・・</div>
+
+    return (
+      <div>
+        <Link to='/'>トップページに戻る</Link>
+        {user && <div>ようこそ {user.name} さん</div>}
+      </div>
+    )
+  }
+}
+
+const AppRoute = (({component: Component, needLogin}) => {
+
+  // ブラウザのlocalStorage領域からuser情報を取得するよ
+  const user = getUser()
+  // ログインが必要なページはログインページに飛ばすよ
+  if (needLogin && Object.keys(user).length === 0) {
+    return <Redirect to={{pathname: '/login'}} />
+  }
+
+  return <Route render={props => <Component {...props} />} />
+})
+
 class App extends React.Component {
 
   constructor(props) {
@@ -216,10 +239,11 @@ class App extends React.Component {
       <BrowserRouter>
         {/* react-routerでページの出し分けを行うよ */}
         <Switch>
-          <Route exact path='/' component={TopPage} />
-          <Route exact path='/signup' component={SignupPage} />
-          <Route exact path='/login' component={LoginPage} />
-          <Route component={NotFound}/>
+          <AppRoute exact path='/' component={TopPage} />
+          <AppRoute exact path='/signup' component={SignupPage} />
+          <AppRoute exact path='/login' component={LoginPage} />
+          <AppRoute exact path='/user' component={UserPage} needLogin />
+          <AppRoute component={NotFound}/>
         </Switch>
       </BrowserRouter>
     )
