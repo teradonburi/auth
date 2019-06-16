@@ -1,7 +1,7 @@
 // parcelが色々解釈してくれて、importとかreactが使えるようになるよ
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { BrowserRouter, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Switch, Route, Link } from 'react-router-dom'
 
 // ブラウザのlocalStorage領域からtoken情報を取得するよ
 function getUser() {
@@ -201,6 +201,8 @@ class LoginPage extends React.Component {
   }
 }
 
+const NotFound = () => <div>Not Found</div>
+
 class App extends React.Component {
 
   constructor(props) {
@@ -212,9 +214,12 @@ class App extends React.Component {
     return (
       <BrowserRouter>
         {/* react-routerでページの出し分けを行うよ */}
-        <Route exact path='/' component={TopPage} />
-        <Route exact path='/signup' component={SignupPage} />
-        <Route exact path='/login' component={LoginPage} />
+        <Switch>
+          <Route exact path='/' component={TopPage} />
+          <Route exact path='/signup' component={SignupPage} />
+          <Route exact path='/login' component={LoginPage} />
+          <Route component={NotFound}/>
+        </Switch>
       </BrowserRouter>
     )
   }
