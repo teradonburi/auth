@@ -6,6 +6,7 @@ const app = express()
 const uuidv4 = require('uuid/v4')
 // ユーザの情報を保存するデータベース
 // 今回は簡易のためjsonファイルに保存するよ
+// 実運用するときはMySQLやmongoDBなどちゃんとしたデータベースに保存した方が良い
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 const adapter = new FileSync('db.json') // 保存するファイル
