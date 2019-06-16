@@ -70,6 +70,13 @@ class SignupPage extends React.Component {
     this.state = { error : null }
     // createUserメソッドの中でthisを使えるようにするよ
     this.createUser = this.createUser.bind(this)
+
+    // ブラウザのlocalStorage領域からuser情報を取得するよ
+    const user = getUser()
+    if (Object.keys(user).length > 0) {
+      // もうログイン済みなのでトップページに遷移するよ
+      this.props.history.replace('/')
+    }
   }
 
   createUser(e) {
@@ -114,13 +121,6 @@ class SignupPage extends React.Component {
       }
     }
 
-    // ブラウザのlocalStorage領域からtoken情報を取得するよ
-    const user = getUser()
-    if (Object.keys(user).length > 0) {
-      // もうログイン済みなのでトップページに遷移するよ
-      return this.props.history.push('/')
-    }
-
     return (
       <form action='url' onSubmit={this.createUser} acceptCharset='UTF-8' >
         <input name='name' required style={styles.input} placeholder='名前' type='text' />
@@ -140,6 +140,13 @@ class LoginPage extends React.Component {
     this.state = { error : null }
     // loginメソッドの中でthisを使えるようにするよ
     this.login = this.login.bind(this)
+
+    // ブラウザのlocalStorage領域からuser情報を取得するよ
+    const user = getUser()
+    if (Object.keys(user).length > 0) {
+      // もうログイン済みなのでトップページに遷移するよ
+      this.props.history.replace('/')
+    }
   }
 
   login(e) {
@@ -181,13 +188,6 @@ class LoginPage extends React.Component {
       error: {
         color: 'red',
       }
-    }
-
-    // ブラウザのlocalStorage領域からtoken情報を取得するよ
-    const user = getUser()
-    if (Object.keys(user).length > 0) {
-      // もうログイン済みなのでトップページに遷移するよ
-      return this.props.history.push('/')
     }
 
     return (
