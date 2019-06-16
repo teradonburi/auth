@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import { BrowserRouter, Switch, Route, Link } from 'react-router-dom'
 
 // ブラウザのlocalStorage領域からtoken情報を取得するよ
+// localStorageはどこからでも参照できるよ
 function getUser() {
   return localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : {}
 }
