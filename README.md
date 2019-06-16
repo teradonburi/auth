@@ -17,7 +17,7 @@ React（SPA）でのログイン最小機能
 $ yarn dev
 ```
 
-# クライアントサイド解説
+# クライアントの処理
 ユーザのログイン後の情報（id, token）はブラウザのlocalStorageに保存します。  
 Chrome DevToolsのApplication -> localStorageから中身を確認できます。  
 
